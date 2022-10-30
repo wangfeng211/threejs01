@@ -2,6 +2,8 @@ import "./style.css";
 import * as THREE from "three";
 import { WebGLRenderer } from "three";
 
+//目标 入门了解Three.js基本概念 做一个最简单的示例
+
 const w = window.innerWidth;
 const h = window.innerHeight;
 
@@ -16,18 +18,19 @@ const material = new THREE.MeshBasicMaterial();
 const cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
 
-//灯光 
+//灯光 由于我们使用的是基本材质，所以不使用灯光也可以看到物体
 // 这里创建一个环境光
-const light = new THREE.AmbientLight()
-// light.position(1,1,0)
-scene.add(light);
+// const light = new THREE.AmbientLight()
+// scene.add(light);
+
+
 
 //相机 类似于人的眼睛
 const carema = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
 carema.position.set(0, 0, 5); //设置一个位置
 scene.add(carema);
 
-//渲染器
+//渲染器 可理解为计算机把以上东西渲染出来
 const renderer = new WebGLRenderer();
 renderer.setSize(w, h);
 renderer.render(scene, carema);
