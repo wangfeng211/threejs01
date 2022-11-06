@@ -1,3 +1,7 @@
+本项目使用Vite 构建工具，原生js，没有使用Vue 或React框架，下载后npm install 安装three依赖，然后npm run dev 运行项目，在index.html 中打开相应的js 文件即可
+
+
+ThreeJs基本认识：
 场景(scene)类似于一个房间
 房间内有物体，物体由2部分组成：几何体（geometry） 和 材质（material）
 房间内有灯光：light，这个项目中我们使用的是环境光 AmbientLight

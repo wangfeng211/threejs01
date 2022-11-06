@@ -1,77 +1,93 @@
 import "./style.css";
 import * as THREE from "three";
-import { WebGLRenderer } from "three";
-import Stat from "three/examples/jsm/libs/stats.module";
-//引入控制器
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import * as dat from 'dat.gui'
 
-//目标 添加阴影
 
-const w = window.innerWidth;
-const h = window.innerHeight;
-
+//创建场景
 const scene = new THREE.Scene();
 
-//公共材质
-const material = new THREE.MeshNormalMaterial();
+const gui = new dat.GUI()
 
-// 添加一个球体
-const sphereGeo = new THREE.SphereGeometry(0.5);
-const sphereMaterial = new THREE.MeshStandardMaterial({
-  color: "yellow",
+//添加灯光 颜色 强度
+const light = new THREE.DirectionalLight(0xffffff);
+light.position.set(1, 1, 1);
+scene.add(light);
+
+//环境光
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+scene.add(ambientLight);
+
+//创建一个球体
+const geometry = new THREE.SphereGeometry(0.5);
+const material = new THREE.MeshStandardMaterial({
+  color: 0xffff00,
 });
-const sphereMesh = new THREE.Mesh(sphereGeo, sphereMaterial);
-sphereMesh.position.y = 1
-//1、 球体产生阴影
-sphereMesh.castShadow = true;
-scene.add(sphereMesh);
+const mesh = new THREE.Mesh(geometry, material);
+mesh.position.y = 0.5;
+scene.add(mesh);
 
 //添加一个平面
-const planGeo = new THREE.PlaneGeometry(8, 8, 8);
-const planMaterial = new THREE.MeshBasicMaterial({ color: 0xcccccc });
-const planM = new THREE.Mesh(planGeo, planMaterial);
-planM.rotation.x = -0.25 * Math.PI;
-//2、平面接收阴影
-planM.receiveShadow = true;
-scene.add(planM);
+const planeGeo = new THREE.PlaneGeometry(10, 10, 10);
+const planeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xcccccc,
+});
+const planeMesh = new THREE.Mesh(planeGeo, planeMaterial);
+planeMesh.rotateX(-0.5 * Math.PI);
+scene.add(planeMesh);
 
-//添加灯光
-// // 环境光
-const ambientLight = new THREE.AmbientLight(0xffffff);
-ambientLight.intensity = 0.2;//强度
-scene.add(ambientLight);
-//平行光
-const directionLight = new THREE.DirectionalLight({ color: 0xffffff });
-directionLight.position.set(2, 2, 2);
-//3、光线产生阴影
-directionLight.castShadow = true;
-scene.add(directionLight);
-
-//相机
-const carema = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
-carema.position.set(0, 0, 5);
+//创建透视相机
+const carema = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.01,
+  100
+);
+carema.position.set(1, 2, 2);
 carema.lookAt(0, 0, 0);
-scene.add(carema);
 
-//渲染器
-const renderer = new WebGLRenderer();
-renderer.setSize(w, h);
- //4、 渲染器开启阴影
-renderer.shadowMap.enabled = true;
+//创建渲染器
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.render(scene, carema);
 
 //控制器
 const orbitControls = new OrbitControls(carema, renderer.domElement);
 
-//clock
-const clock = new THREE.Clock();
-function tick() {
-  const time = clock.getElapsedTime();
+//坐标轴
+const axes = new THREE.AxesHelper(2, 2, 3);
+scene.add(axes);
 
-  requestAnimationFrame(tick);
-  renderer.render(scene, carema);
-  orbitControls.update();
-}
-tick();
+//显示阴影需要4步
+// 1.渲染器 打开阴影
+renderer.shadowMap.enabled = true;
+// 2.设置 灯光
+light.castShadow = true;
+// 3.设置物体
+mesh.castShadow = true;
+// 4.设置平面接收阴影
+planeMesh.receiveShadow = true;
+
+//设置阴影的光滑程度 默认512 * 512
+// 此时可以看到阴影非常光滑 一般设置为2的幂次方
+light.shadow.mapSize.width = 2048;
+light.shadow.mapSize.height = 2048;
+
+gui.add(light.position, 'x', -5,5, 0.01)
+gui.add(light.position, 'y', -5,5, 0.01)
+
+
+const clock = new THREE.Clock();
+const time = () => {
+  requestAnimationFrame(() => {
+    renderer.render(scene, carema);
+
+    const count = clock.getElapsedTime();
+    mesh.position.y = Math.abs(Math.sin(count)) + 0.5;
+    orbitControls.update();
+    time();
+  });
+};
+time();
 
 document.getElementById("app").appendChild(renderer.domElement);
